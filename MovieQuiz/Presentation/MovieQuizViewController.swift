@@ -3,13 +3,14 @@ import UIKit
 final class MovieQuizViewController: UIViewController,  QuestionFactoryDelegate  {
     // MARK: - Lifecycle
     
-    private let questionsAmount: Int = 10
+    private let questionsAmount: Int = 3
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     private var isCorrect: Bool = true
     private var allAmountOfCorrectAnswers: Int = 0
     private var resultText: String = ""
     private var currentQuestionIndex: Int = 0
+    private var alertPresenter: AlertPresenterProtocol?
     
     
     override func viewDidLoad() {
@@ -22,6 +23,7 @@ final class MovieQuizViewController: UIViewController,  QuestionFactoryDelegate 
         noButton.titleLabel?.font = UIFont(name:"YSDisplay-Medium",size:20)
         
         questionFactory = QuestionFactory(delegate: self)
+        alertPresenter = AlertPresenter(vc: self)
         
         questionFactory?.requestNextQuestion()
     }
@@ -69,35 +71,51 @@ final class MovieQuizViewController: UIViewController,  QuestionFactoryDelegate 
     }
     
     
+    func show(quiz result: QuizResultsViewModel) {
+        
+        let alert = UIAlertController(title: result.text, // заголовок всплывающего окна
+                                      message: result.buttonText, // текст во всплывающем окне
+                                      preferredStyle: .alert) // preferredStyle может быть .alert или .actionSheet
+
+        // создаём для него кнопки с действиями
+        let action = UIAlertAction(title: "Сыграть еще раз", style: .default) { _ in
+            self.allAmountOfCorrectAnswers = 0
+            self.currentQuestionIndex = 0
+            self.questionFactory?.requestNextQuestion()
+        }
+
+        // добавляем в алерт кнопки
+        alert.addAction(action)
+
+        // показываем всплывающее окно
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    
     
     private func showNextQuestionOrResults() {
+        
+        var competion: (() -> Void) =  {
+         self.allAmountOfCorrectAnswers = 0
+         self.currentQuestionIndex = 0
+         self.questionFactory?.requestNextQuestion()
+             }
         if currentQuestionIndex ==  questionsAmount - 1 {
-            resultText = "Ваш результат: \(allAmountOfCorrectAnswers)/\(questionsAmount)\n" + "Подздравляем! Больше половины правильных ответов!"
-            
-            // создаём объекты всплывающего окна
-            let alert = UIAlertController(title: "Этот раунд окончен!", // заголовок всплывающего окна
-                                          message: resultText, // текст во всплывающем окне
-                                          preferredStyle: .alert) // preferredStyle может быть .alert или .actionSheet
-            
-            // создаём для него кнопки с действиями
-            let action = UIAlertAction(title: "Сыграть еще раз", style: .default) { [weak self] _ in
-                guard let self = self else { return }
-                self.allAmountOfCorrectAnswers = 0
-                self.currentQuestionIndex = 0
-                self.questionFactory?.requestNextQuestion()
-            }
-            
-            // добавляем в алерт кнопки
-            alert.addAction(action)
-            
-            // показываем всплывающее окно
-            self.present(alert, animated: true, completion: nil)
+            let alertModel = AlertModel(title: "Этот раунд окончен!",
+                                        message: "Ваш результат: \(allAmountOfCorrectAnswers) из \(questionsAmount)",
+                                        buttonText: "Сыграть ещё раз",
+                                        completion: competion)
+            alertPresenter?.show(model: alertModel)
+               /* let text = "Ваш результат: \(allAmountOfCorrectAnswers) из \(questionsAmount)"
+                let viewModel = QuizResultsViewModel(
+                    title: "Этот раунд окончен!",
+                    text: text,
+                    buttonText: "Сыграть ещё раз")*/
+              //  show(quiz: viewModel)
         } else {
             currentQuestionIndex += 1
-            questionFactory?.requestNextQuestion()
-           // let quizViewModel = convert(model: questions[currentQuestionIndex])
-           // show(quiz: quizViewModel)
             // увеличиваем индекс текущего урока на 1; таким образом мы сможем получить следующий урок
+            questionFactory?.requestNextQuestion()
             // показать следующий вопрос
         }
     }
