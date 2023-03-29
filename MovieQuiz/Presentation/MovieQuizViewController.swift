@@ -11,6 +11,7 @@ final class MovieQuizViewController: UIViewController,  QuestionFactoryDelegate 
     private var resultText: String = ""
     private var currentQuestionIndex: Int = 0
     private var alertPresenter: AlertPresenterProtocol?
+    private var statisticServiceImplementation: StatisticService?
     
     
     override func viewDidLoad() {
@@ -24,12 +25,32 @@ final class MovieQuizViewController: UIViewController,  QuestionFactoryDelegate 
         
         questionFactory = QuestionFactory(delegate: self)
         alertPresenter = AlertPresenter(vc: self)
+        statisticServiceImplementation = StatisticServiceImplementation()
         
         questionFactory?.requestNextQuestion()
+        //UserDefaults.standard.set(true, forKey: "viewDidLoad")
+        var jsonURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        jsonURL.appendPathComponent("top250MoviesIMDB.json")
+        if FileManager.default.fileExists(atPath: jsonURL.path) {
+            let jsonString = try? String(contentsOf: jsonURL)
+            guard let json = jsonString else {return }
+            let data = json.data(using: .utf8)!
+            let movieItems = try? JSONDecoder().decode(Top.self, from: data)
+          
+      }
+
     }
     
     // MARK: - QuestionFactoryDelegate
-
+    private func makeButtonsInactive() {
+        yesButton.isEnabled = false
+        noButton.isEnabled = false
+    }
+    private func makeButtonsActive() {
+        yesButton.isEnabled = true
+        noButton.isEnabled = true
+    }
+    
     func didReceiveNextQuestion(question: QuizQuestion?) {
         guard let question = question else {
             return
@@ -95,24 +116,32 @@ final class MovieQuizViewController: UIViewController,  QuestionFactoryDelegate 
     
     private func showNextQuestionOrResults() {
         
-        var competion: (() -> Void) =  {
+        let competion: (() -> Void) =  {
          self.allAmountOfCorrectAnswers = 0
          self.currentQuestionIndex = 0
          self.questionFactory?.requestNextQuestion()
+         self.makeButtonsActive()
              }
+
+        
         if currentQuestionIndex ==  questionsAmount - 1 {
+            statisticServiceImplementation!.store(correct: allAmountOfCorrectAnswers, total: questionsAmount, date: Date())
+            let dateFormatterPrint = DateFormatter()
+            dateFormatterPrint.dateFormat = "dd.MM.YY hh:mm"
+           
+            statisticServiceImplementation!.bestGame = GameRecord(correct: UserDefaults.standard.integer(forKey: "recordCountCorrect"), total:
+                                                                    UserDefaults.standard.integer(forKey: "recordTotalAmount"), date:  UserDefaults.standard.object(forKey: "recordDate") as! Date)
+            
+
+            
             let alertModel = AlertModel(title: "Этот раунд окончен!",
-                                        message: "Ваш результат: \(allAmountOfCorrectAnswers) из \(questionsAmount)",
+                                        message: "Ваш результат: \(allAmountOfCorrectAnswers) из \(questionsAmount) \n Количество сыгранных квизов: \(String(describing: statisticServiceImplementation!.gamesCount))  \n Рекорд: \(String(describing: statisticServiceImplementation!.bestGame.correct)) / \(String(describing: statisticServiceImplementation!.bestGame.total)) (\(dateFormatterPrint.string(from: statisticServiceImplementation!.bestGame.date)) ) \n Средняя точность: \(String(format: "%.2f", statisticServiceImplementation!.totalAccuracy))%",
                                         buttonText: "Сыграть ещё раз",
                                         completion: competion)
             alertPresenter?.show(model: alertModel)
-               /* let text = "Ваш результат: \(allAmountOfCorrectAnswers) из \(questionsAmount)"
-                let viewModel = QuizResultsViewModel(
-                    title: "Этот раунд окончен!",
-                    text: text,
-                    buttonText: "Сыграть ещё раз")*/
-              //  show(quiz: viewModel)
+            
         } else {
+            makeButtonsActive()
             currentQuestionIndex += 1
             // увеличиваем индекс текущего урока на 1; таким образом мы сможем получить следующий урок
             questionFactory?.requestNextQuestion()
@@ -134,6 +163,7 @@ final class MovieQuizViewController: UIViewController,  QuestionFactoryDelegate 
         }
         if currentQuestion.correctAnswer == true {isCorrect = true} else {isCorrect = false}
         showAnswerResult(isCorrect: isCorrect)
+        makeButtonsInactive()
     }
     
     //Нажатие на кнопку "нет"
@@ -143,6 +173,7 @@ final class MovieQuizViewController: UIViewController,  QuestionFactoryDelegate 
         }
         if currentQuestion.correctAnswer == false {isCorrect = true} else {isCorrect = false}
         showAnswerResult(isCorrect: isCorrect)
+        makeButtonsInactive()
     }
     
     @IBOutlet private var imageView: UIImageView!
@@ -164,7 +195,6 @@ final class MovieQuizViewController: UIViewController,  QuestionFactoryDelegate 
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
 }
-
 
     
 

@@ -26,11 +26,13 @@ class AlertPresenter: AlertPresenterProtocol {
                                    style: .default,
                                    handler: { _ in
             model.completion?()
+            
         }
 )
         
         alert.addAction(action)
         vc?.present(alert, animated: true)
+        
     }
     
 }
