@@ -19,39 +19,41 @@ protocol StatisticService {
 
 final class StatisticServiceImplementation: StatisticService {
     func store(correct count: Int, total amount: Int, date dateRecord: Date) {
-        let recordCountCorrect = UserDefaults.standard.integer(forKey: "recordCountCorrect")
-        let recordTotalAmount  = UserDefaults.standard.integer(forKey: "recordTotalAmount")
-        let sumCorrect = UserDefaults.standard.integer(forKey: "recordSumCorrect") + count
-        UserDefaults.standard.set(sumCorrect, forKey: "recordSumCorrect")
+       // let bestGame: GameRecord = GameRecord(correct: UserDefaults.standard.integer(forKey:  Keys.bestGameCountCorrect.rawValue), total: UserDefaults.standard.integer(forKey: Keys.bestGameTotalAmount.rawValue), date: UserDefaults.standard.object(forKey: Keys.bestGameDate.rawValue)  as! Date)
+      //  let currentGame:GameRecord = GameRecord(correct: count, total: amount, date: dateRecord)
+        
+    
+        let recordCountCorrect = UserDefaults.standard.integer(forKey: Keys.bestGameCountCorrect.rawValue)
+        let recordTotalAmount  = UserDefaults.standard.integer(forKey: Keys.bestGameTotalAmount.rawValue)
+        
+        let sumCorrect = UserDefaults.standard.integer(forKey: Keys.bestGameSumCorrect.rawValue) + count
+        UserDefaults.standard.set(sumCorrect, forKey: Keys.bestGameSumCorrect.rawValue)
         
         
-        let countAllGames = UserDefaults.standard.integer(forKey: "countAllGames")+1
-        UserDefaults.standard.set(countAllGames, forKey: "countAllGames")
+        let countAllGames = UserDefaults.standard.integer(forKey: Keys.countAllGames.rawValue)+1
+        UserDefaults.standard.set(countAllGames, forKey: Keys.countAllGames.rawValue)
         
-        let sumAmount = UserDefaults.standard.integer(forKey: "recordSumAmount") + amount
-        UserDefaults.standard.set(sumAmount, forKey: "recordSumAmount")
+        let sumAmount = UserDefaults.standard.integer(forKey: Keys.recordSumAmount.rawValue) + amount
+        UserDefaults.standard.set(sumAmount, forKey: Keys.recordSumAmount.rawValue)
         
-        if recordTotalAmount == 0 {
-            UserDefaults.standard.set(count, forKey: "recordCountCorrect")
-            UserDefaults.standard.set(amount, forKey: "recordTotalAmount")
-            UserDefaults.standard.set(dateRecord, forKey: "recordDate")
+        
+        
+        if recordTotalAmount == 0 || Double(count)/Double(amount) >= Double(recordCountCorrect)/Double(recordTotalAmount) {
+            UserDefaults.standard.set(count, forKey: Keys.bestGameCountCorrect.rawValue)
+            UserDefaults.standard.set(amount, forKey: Keys.bestGameTotalAmount.rawValue)
+            UserDefaults.standard.set(dateRecord, forKey:Keys.bestGameDate.rawValue)
             
-        } else {
-                if count/amount >= recordCountCorrect/recordTotalAmount {
-                    UserDefaults.standard.set(count, forKey: "recordCountCorrect")
-                    UserDefaults.standard.set(amount, forKey: "recordTotalAmount")
-                    UserDefaults.standard.set(dateRecord, forKey: "recordDate")
-                }
-            }
+        }
+            
     }
     
     var totalAccuracy: Double {
         get {
-        Double(UserDefaults.standard.integer(forKey: "recordSumCorrect"))/Double(UserDefaults.standard.integer(forKey: "recordSumAmount"))*100
+        Double(UserDefaults.standard.integer(forKey: Keys.bestGameSumCorrect.rawValue))/Double(UserDefaults.standard.integer(forKey:  Keys.recordSumAmount.rawValue))*100
     }
     }
     
-    var gamesCount: Int {get {UserDefaults.standard.integer(forKey: "countAllGames")}}
+    var gamesCount: Int {get {UserDefaults.standard.integer(forKey: Keys.countAllGames.rawValue)}}
     
     var bestGame: GameRecord {
             get {
@@ -85,8 +87,8 @@ struct GameRecord: Codable {
 }
 
 
-private enum Keys: String {
-    case correct, total, bestGame, gamesCount
+enum Keys: String {
+    case correct, total, bestGame, gamesCount, bestGameCountCorrect, bestGameTotalAmount, bestGameDate, bestGameSumCorrect , countAllGames, recordSumAmount
 }
 
 

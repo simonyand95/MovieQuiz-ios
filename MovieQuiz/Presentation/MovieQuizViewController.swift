@@ -129,13 +129,17 @@ final class MovieQuizViewController: UIViewController,  QuestionFactoryDelegate 
             let dateFormatterPrint = DateFormatter()
             dateFormatterPrint.dateFormat = "dd.MM.YY hh:mm"
            
-            statisticServiceImplementation!.bestGame = GameRecord(correct: UserDefaults.standard.integer(forKey: "recordCountCorrect"), total:
-                                                                    UserDefaults.standard.integer(forKey: "recordTotalAmount"), date:  UserDefaults.standard.object(forKey: "recordDate") as! Date)
+            statisticServiceImplementation!.bestGame = GameRecord(correct: UserDefaults.standard.integer(forKey:  Keys.bestGameCountCorrect.rawValue),
+                                                                  total:
+                                                                    UserDefaults.standard.integer(forKey: Keys.bestGameTotalAmount.rawValue),
+                                                                  date:  UserDefaults.standard.object(forKey: Keys.bestGameDate.rawValue) as! Date)
             
 
+            let thisBestGame = statisticServiceImplementation!.bestGame
+            
             
             let alertModel = AlertModel(title: "Этот раунд окончен!",
-                                        message: "Ваш результат: \(allAmountOfCorrectAnswers) из \(questionsAmount) \n Количество сыгранных квизов: \(String(describing: statisticServiceImplementation!.gamesCount))  \n Рекорд: \(String(describing: statisticServiceImplementation!.bestGame.correct)) / \(String(describing: statisticServiceImplementation!.bestGame.total)) (\(dateFormatterPrint.string(from: statisticServiceImplementation!.bestGame.date)) ) \n Средняя точность: \(String(format: "%.2f", statisticServiceImplementation!.totalAccuracy))%",
+                                        message: "Ваш результат: \(allAmountOfCorrectAnswers) из \(questionsAmount) \n Количество сыгранных квизов: \(String(describing: statisticServiceImplementation!.gamesCount))  \n Рекорд: \(String(describing: thisBestGame.correct)) / \(String(describing: thisBestGame.total)) (\(dateFormatterPrint.string(from: thisBestGame.date)) ) \n Средняя точность: \(String(format: "%.2f", statisticServiceImplementation!.totalAccuracy))%",
                                         buttonText: "Сыграть ещё раз",
                                         completion: competion)
             alertPresenter?.show(model: alertModel)
