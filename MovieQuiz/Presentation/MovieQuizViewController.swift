@@ -1,6 +1,7 @@
 import UIKit
 
 final class MovieQuizViewController: UIViewController,  QuestionFactoryDelegate  {
+    
     // MARK: - Lifecycle
     
     private let questionsAmount: Int = 10
@@ -23,32 +24,46 @@ final class MovieQuizViewController: UIViewController,  QuestionFactoryDelegate 
         yesButton.titleLabel?.font = UIFont(name:"YSDisplay-Medium",size:20)
         noButton.titleLabel?.font = UIFont(name:"YSDisplay-Medium",size:20)
         
-        questionFactory = QuestionFactory(delegate: self)
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         alertPresenter = AlertPresenter(vc: self)
         statisticServiceImplementation = StatisticServiceImplementation()
         
-        questionFactory?.requestNextQuestion()
+        showLoadingIndicator()
+        questionFactory?.loadData()
+        //questionFactory?.requestNextQuestion()
+        
         //UserDefaults.standard.set(true, forKey: "viewDidLoad")
-        var jsonURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        /*var jsonURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         jsonURL.appendPathComponent("top250MoviesIMDB.json")
         if FileManager.default.fileExists(atPath: jsonURL.path) {
             let jsonString = try? String(contentsOf: jsonURL)
             guard let json = jsonString else {return }
             let data = json.data(using: .utf8)!
-            let movieItems = try? JSONDecoder().decode(Top.self, from: data)
+            let movieItems = try? JSONDecoder().decode(Top.self, from: data)*/
           
       }
 
-    }
+
     
     // MARK: - QuestionFactoryDelegate
     private func makeButtonsInactive() {
         yesButton.isEnabled = false
         noButton.isEnabled = false
     }
+    
     private func makeButtonsActive() {
         yesButton.isEnabled = true
         noButton.isEnabled = true
+    }
+    
+    func didLoadDataFromServer() {
+            activityIndicator.isHidden = true // скрываем индикатор загрузки
+            questionFactory?.requestNextQuestion()
+    }
+
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+        
     }
     
     func didReceiveNextQuestion(question: QuizQuestion?) {
@@ -188,87 +203,37 @@ final class MovieQuizViewController: UIViewController,  QuestionFactoryDelegate 
     
     @IBOutlet weak var questionLabel: UILabel!
     
+    @IBOutlet private var activityIndicator: UIActivityIndicatorView!
+    
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false // говорим, что индикатор загрузки не скрыт
+        activityIndicator.startAnimating() // включаем анимацию
+    }
+    
+    private func showNetworkError(message: String) {
+        //hideLoadingIndicator() // скрываем индикатор загрузки
+        let competion: (() -> Void) =  {
+            
+         self.allAmountOfCorrectAnswers = 0
+         self.currentQuestionIndex = 0
+         self.questionFactory?.requestNextQuestion()
+         self.makeButtonsActive()
+             }
 
+        let alertErrorModel = AlertModel(title: "Ошибка",
+                                    message: "",
+                                    buttonText: "Попробовать ещё раз",
+                                    completion: competion)
+        alertPresenter?.show(model: alertErrorModel)
+        // создайте и покажите алерт
+    } 
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         // Попробуйте написать код конвертации сами
         
         return QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
+            image: UIImage(data: model.image) ?? UIImage(), //UIImage(named: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
 }
-
-    
-
-
-   /* private let currentQuestion = questions[currentQuestionIndex]*/
-
-
-    
-
-
-/*
- Mock-данные
- 
- 
- Картинка: The Godfather
- Настоящий рейтинг: 9,2
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: The Dark Knight
- Настоящий рейтинг: 9
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: Kill Bill
- Настоящий рейтинг: 8,1
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: The Avengers
- Настоящий рейтинг: 8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: Deadpool
- Настоящий рейтинг: 8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: The Green Knight
- Настоящий рейтинг: 6,6
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: Old
- Настоящий рейтинг: 5,8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
-
-
- Картинка: The Ice Age Adventures of Buck Wild
- Настоящий рейтинг: 4,3
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
-
-
- Картинка: Tesla
- Настоящий рейтинг: 5,1
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
-
-
- Картинка: Vivarium
- Настоящий рейтинг: 5,8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
- */
