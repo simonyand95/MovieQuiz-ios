@@ -42,12 +42,14 @@ final class MovieQuizViewController: UIViewController,  MovieQuizViewControllerP
     @IBAction private func yesButtonClicked(_ sender: UIButton){
        //presenter.currentQuestion = currentQuestion
         presenter?.yesButtonClicked()
+        makeButtonsInactive()
     }
     
     //Нажатие на кнопку "нет"
     @IBAction private func noButtonClicked(_ sender: UIButton) {
         //presenter.currentQuestion = currentQuestion
         presenter?.noButtonClicked()
+        makeButtonsInactive()
     }
     
     @IBOutlet private var imageView: UIImageView!
@@ -60,12 +62,23 @@ final class MovieQuizViewController: UIViewController,  MovieQuizViewControllerP
     
     @IBOutlet private var activityIndicator: UIActivityIndicatorView!
     
+    private func makeButtonsInactive() {
+        yesButton.isEnabled = false
+        noButton.isEnabled = false
+    }
+    
+    private func makeButtonsActive() {
+        yesButton.isEnabled = true
+        noButton.isEnabled = true
+    }
+    
     func show(quiz step: QuizStepViewModel) {
         // здесь мы заполняем нашу картинку, текст и счётчик данными
         imageView.layer.borderColor = UIColor.clear.cgColor
         imageView.image = step.image
         questionLabel.text = step.question
         titleCounterLabel.text = step.questionNumber
+        self.makeButtonsActive()
     }
 
         func show(quiz result: QuizResultsViewModel) {
