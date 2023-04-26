@@ -80,11 +80,7 @@ class QuestionFactory: QuestionFactoryProtocol {
                     }
                 }
       }
-    
-  /*  weak var delegate: QuestionFactoryDelegate?
-    init(delegate: QuestionFactoryDelegate) {
-        self.delegate = delegate
-    }*/
+
     
     func requestNextQuestion() {
         DispatchQueue.global().async { [weak self] in
@@ -116,8 +112,5 @@ class QuestionFactory: QuestionFactoryProtocol {
             }
         }
     
-
-   //     let question = questions[safe: index]
- //       delegate?.didReceiveNextQuestion(question: question)
     }
 

@@ -19,9 +19,6 @@ protocol StatisticService {
 
 final class StatisticServiceImplementation: StatisticService {
     func store(correct count: Int, total amount: Int, date dateRecord: Date) {
-       // let bestGame: GameRecord = GameRecord(correct: UserDefaults.standard.integer(forKey:  Keys.bestGameCountCorrect.rawValue), total: UserDefaults.standard.integer(forKey: Keys.bestGameTotalAmount.rawValue), date: UserDefaults.standard.object(forKey: Keys.bestGameDate.rawValue)  as! Date)
-      //  let currentGame:GameRecord = GameRecord(correct: count, total: amount, date: dateRecord)
-        
     
         let recordCountCorrect = UserDefaults.standard.integer(forKey: Keys.bestGameCountCorrect.rawValue)
         let recordTotalAmount  = UserDefaults.standard.integer(forKey: Keys.bestGameTotalAmount.rawValue)
