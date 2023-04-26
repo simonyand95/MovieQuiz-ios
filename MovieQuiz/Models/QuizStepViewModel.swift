@@ -5,7 +5,7 @@
 //  Created by Диана Симонян on 17.03.2023.
 //
 
-import Foundation
+
 import UIKit
 // для состояния "Вопрос задан"
 //private

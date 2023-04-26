@@ -5,12 +5,11 @@
 //  Created by Диана Симонян on 24.04.2023.
 //
 
-import Foundation
-
 import UIKit
 
 
 final class MovieQuizPresenter: QuestionFactoryDelegate {
+
     func didReceiveNextQuestion(question: QuizQuestion?) {
         guard let question = question else {
             return
@@ -147,4 +146,4 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
 
         return resultMessage
     }
-} 
+}
